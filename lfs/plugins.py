@@ -160,7 +160,7 @@ class PriceCalculator(object):
         self.request = request
         self.product = product
 
-    def get_price(self, with_properties=True):
+    def get_price(self, with_properties=True, amount=1):
         """
         Returns the stored price of the product without any tax calculations.
         It takes variants, properties and sale prices into account, though.
@@ -178,18 +178,20 @@ class PriceCalculator(object):
 
         if object.get_for_sale():
             if object.is_variant() and not object.active_for_sale_price:
-                price = object.parent.get_for_sale_price(self.request, with_properties)
+                price = object.parent.get_for_sale_price(self.request, with_properties, amount)
             else:
-                price = object.get_for_sale_price(self.request, with_properties)
+                price = object.get_for_sale_price(self.request, with_properties, amount)
         else:
             if object.is_variant() and not object.active_price:
-                price = object.parent.price
+                price = object.parent.get_amount_price(amount)
             else:
-                price = object.price
+                price = object.get_amount_price(amount)
+                if with_properties:
+                    price += object.get_default_properties_price()
 
         return price
 
-    def get_price_net(self, with_properties=True):
+    def get_price_net(self, with_properties=True, amount=1):
         """
         Returns the net price of the product.
 
@@ -201,7 +203,7 @@ class PriceCalculator(object):
         """
         raise NotImplementedError
 
-    def get_price_gross(self, with_properties=True):
+    def get_price_gross(self, with_properties=True, amount=1):
         """
         Returns the real gross price of the product. This is the base of
         all price and tax calculations.
@@ -214,7 +216,7 @@ class PriceCalculator(object):
         """
         raise NotImplementedError
 
-    def get_standard_price(self, with_properties=True):
+    def get_standard_price(self, with_properties=True, amount=1):
         """
         Returns always the stored standard price for the product. Independent
         whether the product is for sale or not. If you want the real price of
@@ -234,13 +236,13 @@ class PriceCalculator(object):
         if object.is_variant() and not object.active_price:
             object = object.parent
 
-        price = object.price
+        price = object.get_amount_price(amount)
         if with_properties and object.is_configurable_product():
             price += object.get_default_properties_price()
 
         return price
 
-    def get_standard_price_net(self, with_properties=True):
+    def get_standard_price_net(self, with_properties=True, amount=1):
         """
         Returns always the standard net price for the product. Independent
         whether the product is for sale or not. If you want the real net price
@@ -254,7 +256,7 @@ class PriceCalculator(object):
         """
         raise NotImplementedError
 
-    def get_standard_price_gross(self, with_properties=True):
+    def get_standard_price_gross(self, with_properties=True, amount=1):
         """
         Returns always the gross standard price for the product. Independent
         whether the product is for sale or not. If you want the real gross
@@ -268,7 +270,7 @@ class PriceCalculator(object):
         """
         raise NotImplementedError
 
-    def get_for_sale_price(self, with_properties=True):
+    def get_for_sale_price(self, with_properties=True, amount=1):
         """
         Returns the sale price for the product.
 
@@ -286,13 +288,13 @@ class PriceCalculator(object):
         if object.is_variant() and not object.active_for_sale_price:
             object = object.parent
 
-        price = object.for_sale_price
+        price = object.get_amount_for_sale_price(amount)
         if with_properties and object.is_configurable_product():
             price += object.get_default_properties_price()
 
         return price
 
-    def get_for_sale_price_net(self, with_properties=True):
+    def get_for_sale_price_net(self, with_properties=True, amount=1):
         """
         Returns the sale net price for the product.
 
@@ -304,7 +306,7 @@ class PriceCalculator(object):
         """
         raise NotImplementedError
 
-    def get_for_sale_price_gross(self, with_properties=True):
+    def get_for_sale_price_gross(self, with_properties=True, amount=1):
         """
         Returns the sale net price for the product.
 
@@ -316,7 +318,7 @@ class PriceCalculator(object):
         """
         raise NotImplementedError
 
-    def get_base_price(self, with_properties=True):
+    def get_base_price(self, with_properties=True, amount=1):
         """
         Returns the base price of the product.
 
@@ -327,11 +329,11 @@ class PriceCalculator(object):
             True the prices of the default properties are added to the price.
         """
         try:
-            return self.get_price(with_properties) / self.product.get_base_price_amount()
+            return self.get_price(with_properties, amount) / self.product.get_base_price_amount()
         except (TypeError, ZeroDivisionError):
             return 0.0
 
-    def get_base_price_net(self, with_properties=True):
+    def get_base_price_net(self, with_properties=True, amount=1):
         """
         Returns the net base price of the product.
 
@@ -342,11 +344,11 @@ class PriceCalculator(object):
             True the prices of the default properties are added to the price.
         """
         try:
-            return self.get_price_net(with_properties) / self.product.get_base_price_amount()
+            return self.get_price_net(with_properties, amount) / self.product.get_base_price_amount()
         except (TypeError, ZeroDivisionError):
             return 0.0
 
-    def get_base_price_gross(self, with_properties=True):
+    def get_base_price_gross(self, with_properties=True, amount=1):
         """
         Returns the gross base price of the product.
 
@@ -357,11 +359,11 @@ class PriceCalculator(object):
             True the prices of the default properties are added to the price.
         """
         try:
-            return self.get_price_gross(with_properties) / self.product.get_base_price_amount()
+            return self.get_price_gross(with_properties, amount) / self.product.get_base_price_amount()
         except (TypeError, ZeroDivisionError):
             return 0.0
 
-    def get_base_packing_price(self, with_properties=True):
+    def get_base_packing_price(self, with_properties=True, amount=1):
         """
         Returns the base packing price of the product.
 
@@ -371,9 +373,9 @@ class PriceCalculator(object):
             If the instance is a configurable product and with_properties is
             True the prices of the default properties are added to the price.
         """
-        return self.get_price(with_properties) * self._calc_packing_amount()
+        return self.get_price(with_properties, amount) * self._calc_packing_amount()
 
-    def get_base_packing_price_net(self, with_properties=True):
+    def get_base_packing_price_net(self, with_properties=True, amount=1):
         """
         Returns the base packing net price of the product.
 
@@ -383,9 +385,9 @@ class PriceCalculator(object):
             If the instance is a configurable product and with_properties is
             True the prices of the default properties are added to the price.
         """
-        return self.get_price_net(with_properties) * self._calc_packing_amount()
+        return self.get_price_net(with_properties, amount) * self._calc_packing_amount()
 
-    def get_base_packing_price_gross(self, with_properties=True):
+    def get_base_packing_price_gross(self, with_properties=True, amount=1):
         """
         Returns the base packing gross price of the product.
 
@@ -395,7 +397,7 @@ class PriceCalculator(object):
             If the instance is a configurable product and with_properties is
             True the prices of the default properties are added to the price.
         """
-        return self.get_price_gross(with_properties) * self._calc_packing_amount()
+        return self.get_price_gross(with_properties, amount) * self._calc_packing_amount()
 
     def get_customer_tax_rate(self):
         """
@@ -404,7 +406,7 @@ class PriceCalculator(object):
         from lfs.customer_tax.utils import get_customer_tax_rate
         return get_customer_tax_rate(self.request, self.product)
 
-    def get_customer_tax(self, with_properties=True):
+    def get_customer_tax(self, with_properties=True, amount=1):
         """
         Returns the calculated tax for the current customer and product.
 
@@ -414,7 +416,7 @@ class PriceCalculator(object):
             If the instance is a configurable product and with_properties is
             True the taxes of the default properties are added to the price.
         """
-        return self.get_price_gross(with_properties) - self.get_price_net(with_properties)
+        return self.get_price_gross(with_properties, amount) - self.get_price_net(with_properties, amount)
 
     def get_product_tax_rate(self):
         """
@@ -431,12 +433,12 @@ class PriceCalculator(object):
         except AttributeError:
             return 0.0
 
-    def get_product_tax(self, with_properties=True):
+    def get_product_tax(self, with_properties=True, amount=1):
         """
         Returns the calculated tax for the current product independent of the
         customer.
         """
-        return self.get_price(with_properties) - self.get_price(with_properties)
+        return self.get_price(with_properties, amount) - self.get_price(with_properties, amount)
 
     def price_includes_tax(self):
         """

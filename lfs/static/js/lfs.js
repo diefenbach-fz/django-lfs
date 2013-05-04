@@ -147,6 +147,7 @@ $(function() {
                 $(".standard-price-value").html(data["price"]);
                 $(".for-sale-price-value").html(data["for-sale-price"]);
                 $(".for-sale-standard-price-value").html(data["for-sale-standard-price"]);
+                $(".scale-of-prices").html(data["scale-of-prices"]);
                 $(".packing-result").html(data["packing-result"]);
                 $.jGrowl(data["message"]);
 
