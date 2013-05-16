@@ -148,6 +148,18 @@
 
         <fieldset>
             <legend>{% trans "Prices" %}</legend>
+            {% for price in product.prices.all %}
+                <div class="ps-wrapper">
+                    Amount <input name="ps_amount-{{ price.id }}" type="text" value="{{ price.amount }}" />
+                    Price <input name="ps_price-{{ price.id }}" type="text" value="{{ price.price }}" />
+                    For Sale Price <input name="ps_for_sale_price-{{ price.id }}" type="text" value="{{price.for_sale_price }}" />
+                    <a class="ps-delete-button" href="">-</a>
+                </div>
+
+            {% endfor %}
+        </fieldset>
+        <fieldset>
+            <legend>{% trans "Prices" %}</legend>
             <div class="field">
                 <div class="label">
                     {% if product.is_variant %}
@@ -416,18 +428,7 @@
                     $(this).parent(".ps-wrapper").remove();
                     return false;
                 });
-
-                var id = '4711';
-                var html = '<div class="ps-wrapper">' +
-                               'Amount <input name="new_ps_amount-' + id + '"type="text" />' +
-                               ' Price <input name="new_ps_price-' + id + '" type="text" />' +
-                               ' For Sale Price <input name="new_ps_for_sale_price-' + id + '" type="text" />' +
-                               ' <a class="ps-delete-button" href="">-</a>' +
-                               ' <a class="ps-add-button" href="">+</a>' +
-                           '</div>';
-
                 $(".ps-add-button").live("click", function() {
-                    $(this).parent(".ps-wrapper").after(html);
                     return false;
                 });
             });
