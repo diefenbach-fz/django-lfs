@@ -507,6 +507,25 @@ $(function() {
 
         return false;
     });
+
+    $(".ps-delete-button").live("click", function() {
+        $(this).parent(".ps-wrapper").remove();
+        return false;
+    });
+
+    var id = '4711';
+    var html = '<div class="ps-wrapper">' +
+                   'Amount <input name="new_ps_amount-' + id + '"type="text" />' +
+                   ' Price <input name="new_ps_price-' + id + '" type="text" />' +
+                   ' For Sale Price <input name="new_ps_for_sale_price-' + id + '" type="text" />' +
+                   ' <a class="ps-delete-button" href="">-</a>' +
+                   ' <a class="ps-add-button" href="">+</a>' +
+               '</div>';
+
+    $(".ps-add-button").live("click", function() {
+        $(this).parent(".ps-wrapper").after(html);
+        return false;
+    });
 })
 
 $(document).ajaxComplete(function() {

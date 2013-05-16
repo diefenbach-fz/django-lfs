@@ -148,12 +148,16 @@
 
         <fieldset>
             <legend>{% trans "Prices" %}</legend>
+            <div class="ps-wrapper">
+                <a class="ps-add-button" href="">+</a>
+            </div>
             {% for price in product.prices.all %}
                 <div class="ps-wrapper">
                     Amount <input name="ps_amount-{{ price.id }}" type="text" value="{{ price.amount }}" />
                     Price <input name="ps_price-{{ price.id }}" type="text" value="{{ price.price }}" />
                     For Sale Price <input name="ps_for_sale_price-{{ price.id }}" type="text" value="{{price.for_sale_price }}" />
                     <a class="ps-delete-button" href="">-</a>
+                    <a class="ps-add-button" href="">+</a>
                 </div>
 
             {% endfor %}
@@ -422,15 +426,4 @@
                    type="submit"
                    value="{% trans 'Save data' %}" />
         </div>
-        <script type="text/javascript">
-            $(function() {
-                $(".ps-delete-button").live("click", function() {
-                    $(this).parent(".ps-wrapper").remove();
-                    return false;
-                });
-                $(".ps-add-button").live("click", function() {
-                    return false;
-                });
-            });
-        </script>
 </form>

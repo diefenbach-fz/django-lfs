@@ -425,11 +425,8 @@ def edit_product_data(request, product_id, template_name="manage/product/data.ht
     for key, value in request.POST.items():
         if key.startswith("new_ps_amount"):
             pp_id = key.split("-")[1]
-            pp.amount = value
-
             pp_price = request.POST.get("new_ps_price-%s" % pp_id)
             pp_for_sale_price = request.POST.get("new_ps_for_sale_price-%s" % pp_id)
-
             pp = ProductPrice.objects.create(product=product, amount=value, price=pp_price, for_sale_price=pp_for_sale_price)
 
         if key.startswith("ps_amount"):
