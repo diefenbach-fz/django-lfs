@@ -2727,7 +2727,7 @@ class ProductPrice(models.Model):
     """Represents one price for a product when the product has more than one
     price.
     """
-    product = models.ForeignKey(Product)
+    product = models.ForeignKey(Product, related_name="prices")
     amount = models.IntegerField()
     price = models.FloatField(_(u"Price"))
     for_sale_price = models.FloatField(_(u"For Sale Price"))

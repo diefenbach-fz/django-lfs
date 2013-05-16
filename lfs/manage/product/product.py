@@ -24,6 +24,7 @@ import lfs.core.utils
 from lfs.caching.utils import lfs_get_object_or_404
 from lfs.catalog.models import Category
 from lfs.catalog.models import Product
+from lfs.catalog.models import ProductPrice
 from lfs.catalog.settings import CHOICES
 from lfs.catalog.settings import CHOICES_YES
 from lfs.catalog.settings import PRODUCT_TEMPLATES
@@ -415,6 +416,36 @@ def edit_product_data(request, product_id, template_name="manage/product/data.ht
     products = _get_filtered_products_for_product_view(request)
     paginator = Paginator(products, 25)
     page = paginator.page(request.REQUEST.get("page", 1))
+
+    # Product prices
+    for pp in product.prices.all():
+        if not request.POST.get("ps_amount-%s" % pp.id):
+            pp.delete()
+
+    for key, value in request.POST.items():
+        if key.startswith("new_ps_amount"):
+            pp_id = key.split("-")[1]
+            pp.amount = value
+
+            pp_price = request.POST.get("new_ps_price-%s" % pp_id)
+            pp_for_sale_price = request.POST.get("new_ps_for_sale_price-%s" % pp_id)
+
+            pp = ProductPrice.objects.create(product=product, amount=value, price=pp_price, for_sale_price=pp_for_sale_price)
+
+        if key.startswith("ps_amount"):
+            pp_id = key.split("-")[1]
+            pp = ProductPrice.objects.get(pk=pp_id)
+
+            pp.amount = value
+
+            pp_price = request.POST.get("ps_price-%s" % pp_id)
+            pp.price = pp_price
+
+            pp_for_sale_price = request.POST.get("ps_for_sale_price-%s" % pp_id)
+            pp.for_sale_price = pp_for_sale_price
+
+            pp.save()
+
 
     # Transform empty field / "on" from checkbox to integer
     data = dict(request.POST.items())
