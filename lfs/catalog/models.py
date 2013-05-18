@@ -1272,41 +1272,27 @@ class Product(models.Model):
         """
         Returns the price based on the selected amount of a product.
         """
-        if self.is_variant():
-            product = self.parent
-        else:
-            product = self
-        pps = ProductPrice.objects.filter(product=product).order_by("-amount")
-        if not pps:
-            return self.price
-        else:
-            for pp in pps:
-                if amount >= pp.amount:
-                    return pp.price
+        pps = ProductPrice.objects.filter(product=self).order_by("-amount")
+        for pp in pps:
+            if amount >= pp.amount:
+                return pp.price
 
     def get_amount_for_sale_price(self, amount):
         """
         Returns the for sale price based on the selected amount of a product.
         """
         pps = ProductPrice.objects.filter(product=self).order_by("-amount")
-        if not pps:
-            return self.for_sale_price
-        else:
-            for pp in pps:
-                if amount >= pp.amount:
-                    return pp.for_sale_price
+        for pp in pps:
+            if amount >= pp.amount:
+                return pp.for_sale_price
 
     def has_scale_of_prices(self):
-        if self.is_variant():
+        if self.is_variant() and not self.active_price:
             product = self.parent
         else:
             product = self
-        try:
-            ProductPrice.objects.filter(product=product)[0]
-        except IndexError:
-            return False
-        else:
-            return True
+
+        return len(product.prices.all()) > 1
 
     def get_price_calculator(self, request):
         """
@@ -2727,7 +2713,10 @@ class ProductPrice(models.Model):
     """Represents one price for a product when the product has more than one
     price.
     """
+    class Meta:
+        ordering = ("amount", )
+
     product = models.ForeignKey(Product, related_name="prices")
-    amount = models.IntegerField()
-    price = models.FloatField(_(u"Price"))
-    for_sale_price = models.FloatField(_(u"For Sale Price"))
+    amount = models.IntegerField(default=1)
+    price = models.FloatField(_(u"Price"), default=0.0)
+    for_sale_price = models.FloatField(_(u"For Sale Price"), default=0.0)

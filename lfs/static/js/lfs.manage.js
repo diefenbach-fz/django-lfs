@@ -87,6 +87,17 @@ function sortable() {
     });
 }
 
+function make_id()
+{
+    var text = "";
+    var possible = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+    for(var i=0; i < 5; i++)
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    return text;
+}
+
 $(function() {
     update_editor();
     $(".button").button();
@@ -513,16 +524,16 @@ $(function() {
         return false;
     });
 
-    var id = '4711';
-    var html = '<div class="ps-wrapper">' +
-                   'Amount <input name="new_ps_amount-' + id + '"type="text" />' +
-                   ' Price <input name="new_ps_price-' + id + '" type="text" />' +
-                   ' For Sale Price <input name="new_ps_for_sale_price-' + id + '" type="text" />' +
-                   ' <a class="ps-delete-button" href="">-</a>' +
-                   ' <a class="ps-add-button" href="">+</a>' +
-               '</div>';
-
     $(".ps-add-button").live("click", function() {
+        var id = make_id();
+        var html = '<div class="ps-wrapper">' +
+                       'Amount <input name="new_ps_amount-' + id + '"type="text" />' +
+                       ' Price <input name="new_ps_price-' + id + '" type="text" />' +
+                       ' For Sale Price <input name="new_ps_for_sale_price-' + id + '" type="text" />' +
+                       ' <a class="ps-delete-button" href="">-</a>' +
+                       ' <a class="ps-add-button" href="">+</a>' +
+                   '</div>';
+
         $(this).parent(".ps-wrapper").after(html);
         return false;
     });

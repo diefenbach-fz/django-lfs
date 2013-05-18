@@ -159,16 +159,16 @@ def scale_of_prices(request, product, with_properties, template_name="lfs/catalo
         If True the price of the default properties of a configurable product is
         added to the base price.
     """
-    if product.is_variant():
+    if product.is_variant() and not product.active_price:
         product = product.parent
 
     prices = []
-    for pp in ProductPrice.objects.filter(product=product):
+    for pp in product.prices.all():
         property_price = _calculate_property_price(request)
         prices.append({
             "amount": pp.amount,
-            "price": product.get_standard_price(request, with_properties, pp.amount) + property_price,
-            "for_sale_price": product.get_for_sale_price(request, with_properties, pp.amount) + property_price,
+            "price": pp.price + property_price,
+            "for_sale_price": pp.for_sale_price + property_price,
         })
 
     return render_to_string(template_name, RequestContext(request, {

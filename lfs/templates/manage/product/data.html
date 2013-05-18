@@ -148,44 +148,27 @@
 
         <fieldset>
             <legend>{% trans "Prices" %}</legend>
-            <div class="ps-wrapper">
-                <a class="ps-add-button" href="">+</a>
-            </div>
-            {% for price in product.prices.all %}
-                <div class="ps-wrapper">
-                    Amount <input name="ps_amount-{{ price.id }}" type="text" value="{{ price.amount }}" />
-                    Price <input name="ps_price-{{ price.id }}" type="text" value="{{ price.price }}" />
-                    For Sale Price <input name="ps_for_sale_price-{{ price.id }}" type="text" value="{{price.for_sale_price }}" />
-                    <a class="ps-delete-button" href="">-</a>
-                    <a class="ps-add-button" href="">+</a>
-                </div>
-
-            {% endfor %}
-        </fieldset>
-        <fieldset>
-            <legend>{% trans "Prices" %}</legend>
             <div class="field">
                 <div class="label">
                     {% if product.is_variant %}
                         {{ form.active_price }}
                     {% endif %}
 
-                    {{ form.price.label_tag }}:
+                    {% trans "Price" %}:
                 </div>
-
-                {% if form.price.errors %}
-                    <div class="error">
-                        {{ form.price }}
-                        {{ form.price.errors }}
-                    </div>
-                {% else %}
-                    <div>
-                        {{ form.price }}
-                        {% if product.is_variant %}
-                            {{ product.parent.price|currency:request }}
-                        {% endif %}
-                    </div>
-                {% endif %}
+                <div>
+                    {% for price in product.prices.all %}
+                        <div class="ps-wrapper">
+                            Amount <input {% if forloop.first %}readonly="true"{% endif %} name="ps_amount-{{ price.id }}" type="text" value="{{ price.amount }}" />
+                            Price <input name="ps_price-{{ price.id }}" type="text" value="{{ price.price }}" />
+                            For Sale Price <input name="ps_for_sale_price-{{ price.id }}" type="text" value="{{price.for_sale_price }}" />
+                            <a class="ps-add-button" href="">+</a>
+                            {% if not forloop.first %}
+                                <a class="ps-delete-button" href="">-</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
 
             {% if not product.is_variant %}
@@ -246,35 +229,12 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="field">
-                    <div class="label">
-                        {{ form.active_for_sale_price }}
-                        {{ form.for_sale_price.label_tag }}:
-                    </div>
-                    <div>
-                        {{ form.for_sale_price }}
-                        {{ product.parent.for_sale_price|currency:request }}
-                    </div>
-
-                </div>
             {% else %}
                 <div class="field">
-
                     <div class="label">
                         {{ form.for_sale }}
                         {{ form.for_sale.label_tag }}:
                     </div>
-
-                    {% if form.for_sale_price.errors %}
-                        <div class="error">
-                            {{ form.for_sale_price }}
-                            {{ form.for_sale_price.errors }}
-                        </div>
-                    {% else %}
-                        <div>
-                            {{ form.for_sale_price }}
-                        </div>
-                    {% endif %}
                 </div>
             {% endif %}
         </fieldset>

@@ -177,7 +177,7 @@ class PriceCalculator(object):
             object = object.get_default_variant()
 
         if object.get_for_sale():
-            if object.is_variant() and not object.active_for_sale_price:
+            if object.is_variant() and not object.active_price:
                 price = object.parent.get_for_sale_price(self.request, with_properties, amount)
             else:
                 price = object.get_for_sale_price(self.request, with_properties, amount)
@@ -285,7 +285,7 @@ class PriceCalculator(object):
         if object.is_product_with_variants() and object.get_default_variant():
             object = object.get_default_variant()
 
-        if object.is_variant() and not object.active_for_sale_price:
+        if object.is_variant() and not object.active_price:
             object = object.parent
 
         price = object.get_amount_for_sale_price(amount)
