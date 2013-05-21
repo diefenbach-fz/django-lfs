@@ -440,6 +440,8 @@ def add_variants(request, product_id):
                 # the variants
                 for property_group in product.property_groups.all():
                     variant.property_groups.add(property_group)
+                from lfs.catalog.models import ProductPrice
+                ProductPrice.objects.create(product=variant)
 
             # Save the value for this product and property.
             for option in options:
@@ -534,7 +536,7 @@ def update_variants(request, product_id):
                         pass
                     else:
                         product.save()
-                
+
                 variant.save()
 
             elif key.startswith("property"):

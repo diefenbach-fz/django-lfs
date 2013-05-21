@@ -24,6 +24,7 @@ import lfs.core.utils
 from lfs.caching.utils import lfs_get_object_or_404
 from lfs.catalog.models import Category
 from lfs.catalog.models import Product
+from lfs.catalog.models import ProductPrice
 from lfs.catalog.settings import CHOICES
 from lfs.catalog.settings import CHOICES_YES
 from lfs.catalog.settings import PRODUCT_TEMPLATES
@@ -78,8 +79,8 @@ class ProductDataForm(forms.ModelForm):
 
     class Meta:
         model = Product
-        fields = ("active", "name", "slug", "manufacturer", "sku", "sku_manufacturer", "price", "tax", "price_calculator",
-            "short_description", "description", "for_sale", "for_sale_price", "static_block", "template",
+        fields = ("active", "name", "slug", "manufacturer", "sku", "sku_manufacturer", "tax", "price_calculator",
+            "short_description", "description", "for_sale", "static_block", "template",
             "active_price_calculation", "price_calculation", "price_unit", "unit", "type_of_quantity_field",
             "active_base_price", "base_price_unit", "base_price_amount")
 
@@ -106,8 +107,8 @@ class VariantDataForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = ("active", "active_name", "name", "slug", "manufacturer", "active_sku", "sku", "sku_manufacturer",
-            "active_price", "price", "price_calculator", "active_short_description", "short_description", "active_description",
-            "description", "for_sale", "for_sale_price", "active_for_sale", "active_for_sale_price",
+            "active_price", "price_calculator", "active_short_description", "short_description", "active_description",
+            "description", "for_sale", "active_for_sale", "active_for_sale_price",
             "active_related_products", "active_static_block", "static_block", "template",
             "active_base_price", "base_price_unit", "base_price_amount")
 
@@ -369,6 +370,7 @@ def add_product(request, template_name="manage/product/add_product.html"):
         form = ProductAddForm(request.POST)
         if form.is_valid():
             new_product = form.save()
+            ProductPrice.objects.create(product=new_product)
             url = reverse("lfs_manage_product", kwargs={"product_id": new_product.id})
             return HttpResponseRedirect(url)
     else:
@@ -415,6 +417,63 @@ def edit_product_data(request, product_id, template_name="manage/product/data.ht
     products = _get_filtered_products_for_product_view(request)
     paginator = Paginator(products, 25)
     page = paginator.page(request.REQUEST.get("page", 1))
+
+    # Product prices
+    for pp in product.prices.all():
+        if not request.POST.get("ps_amount-%s" % pp.id):
+            pp.delete()
+
+    for key, value in request.POST.items():
+        if key.startswith("new_ps_amount"):
+            pp_id = key.split("-")[1]
+            pp_price = request.POST.get("new_ps_price-%s" % pp_id)
+            try:
+                pp_price = float(pp_price)
+            except (ValueError, TypeError):
+                pp_price = 0.0
+
+            pp_for_sale_price = request.POST.get("new_ps_for_sale_price-%s" % pp_id)
+            try:
+                pp_for_sale_price = float(pp_for_sale_price)
+            except (ValueError, TypeError):
+                pp_for_sale_price = 0.0
+
+            try:
+                amount = int(value)
+            except (ValueError, TypeError):
+                amount = 1
+
+            pp = ProductPrice.objects.create(product=product, amount=amount, price=pp_price, for_sale_price=pp_for_sale_price)
+
+        if key.startswith("ps_amount"):
+            pp_id = key.split("-")[1]
+            pp = ProductPrice.objects.get(pk=pp_id)
+
+            try:
+                value = int(value)
+            except (ValueError, TypeError):
+                value = 1
+            pp.amount = value
+
+            pp_price = request.POST.get("ps_price-%s" % pp_id)
+            try:
+                pp_price = float(pp_price)
+            except (ValueError, TypeError):
+                pp_price = 0.0
+            pp.price = pp_price
+
+            pp_for_sale_price = request.POST.get("ps_for_sale_price-%s" % pp_id)
+            try:
+                pp_for_sale_price = float(pp_for_sale_price)
+            except(ValueError, TypeError):
+                pp_for_sale_price = 0.0
+            pp.for_sale_price = pp_for_sale_price
+
+            pp.save()
+
+        pp = product.prices.all()[0]
+        pp.amount = 1
+        pp.save()
 
     # Transform empty field / "on" from checkbox to integer
     data = dict(request.POST.items())

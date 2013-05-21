@@ -25,6 +25,7 @@ from lfs.cart.views import add_to_cart
 from lfs.catalog.models import Category, Property
 from lfs.catalog.models import File
 from lfs.catalog.models import Product
+from lfs.catalog.models import ProductPrice
 from lfs.catalog.models import ProductPropertyValue
 from lfs.catalog.models import PropertyOption
 from lfs.catalog.settings import CONTENT_PRODUCTS
@@ -133,16 +134,47 @@ def calculate_price(request, id):
     else:
         packing_result = ""
 
+
     result = simplejson.dumps({
         "price": lfs_tags.currency(price, request),
         "for-sale-standard-price": lfs_tags.currency(for_sale_standard_price),
         "for-sale-price": lfs_tags.currency(for_sale_price),
+        "scale-of-prices": scale_of_prices(request, product, with_properties=False),
         "packing-result": packing_result,
         "message": _("Price has been changed according to your selection."),
     }, cls=LazyEncoder)
 
     return HttpResponse(result)
 
+def scale_of_prices(request, product, with_properties, template_name="lfs/catalog/scale_of_prices.html"):
+    """Displays scales of prices of a product.
+
+    request
+        The current request
+
+    product
+        The current displayed product
+
+    with_properties
+        If True the price of the default properties of a configurable product is
+        added to the base price.
+    """
+    if product.is_variant() and not product.active_price:
+        product = product.parent
+
+    prices = []
+    for pp in product.prices.all():
+        property_price = _calculate_property_price(request)
+        prices.append({
+            "amount": pp.amount,
+            "price": pp.price + property_price,
+            "for_sale_price": pp.for_sale_price + property_price,
+        })
+
+    return render_to_string(template_name, RequestContext(request, {
+        "product": product,
+        "prices": prices,
+    }))
 
 def select_variant_from_properties(request):
     """
@@ -564,6 +596,7 @@ def product_inline(request, product, template_name="lfs/catalog/products/product
         "unit": product.get_unit(),
         "display_variants_list": display_variants_list,
         "for_sale": product.get_for_sale(),
+        "scale_of_prices": scale_of_prices(request, product, with_properties=True)
     }))
 
     cache.set(cache_key, result)

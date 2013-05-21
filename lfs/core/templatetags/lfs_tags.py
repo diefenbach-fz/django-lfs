@@ -28,6 +28,7 @@ from lfs.catalog.settings import PRODUCT_WITH_VARIANTS
 from lfs.catalog.settings import STANDARD_PRODUCT
 from lfs.catalog.settings import SORTING_MAP
 from lfs.catalog.models import Product
+from lfs.catalog.models import ProductPrice
 from lfs.catalog.models import PropertyOption
 from lfs.catalog.settings import PRODUCT_TYPE_LOOKUP
 from lfs.core.models import Action

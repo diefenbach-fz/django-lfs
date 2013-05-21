@@ -1268,6 +1268,32 @@ class Product(models.Model):
 
         return price
 
+    def get_amount_price(self, amount):
+        """
+        Returns the price based on the selected amount of a product.
+        """
+        pps = ProductPrice.objects.filter(product=self).order_by("-amount")
+        for pp in pps:
+            if amount >= pp.amount:
+                return pp.price
+
+    def get_amount_for_sale_price(self, amount):
+        """
+        Returns the for sale price based on the selected amount of a product.
+        """
+        pps = ProductPrice.objects.filter(product=self).order_by("-amount")
+        for pp in pps:
+            if amount >= pp.amount:
+                return pp.for_sale_price
+
+    def has_scale_of_prices(self):
+        if self.is_variant() and not self.active_price:
+            product = self.parent
+        else:
+            product = self
+
+        return len(product.prices.all()) > 1
+
     def get_price_calculator(self, request):
         """
         Returns the price calculator class as defined in LFS_PRICE_CALCULATORS
@@ -1289,82 +1315,82 @@ class Product(models.Model):
         pc = self.get_price_calculator(request)
         return pc.get_price(with_properties)
 
-    def get_price_net(self, request, with_properties=True):
+    def get_price_net(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_price_net(with_properties)
+        return pc.get_price_net(with_properties, amount)
 
-    def get_price_gross(self, request, with_properties=True):
+    def get_price_gross(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_price_gross(with_properties)
+        return pc.get_price_gross(with_properties, amount)
 
-    def get_standard_price(self, request, with_properties=True):
+    def get_standard_price(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_standard_price(with_properties)
+        return pc.get_standard_price(with_properties, amount)
 
-    def get_standard_price_net(self, request, with_properties=True):
+    def get_standard_price_net(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_standard_price_net(with_properties)
+        return pc.get_standard_price_net(with_properties, amount=1)
 
-    def get_standard_price_gross(self, request, with_properties=True):
+    def get_standard_price_gross(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_standard_price_gross(with_properties)
+        return pc.get_standard_price_gross(with_properties, amount=1)
 
-    def get_for_sale_price(self, request, with_properties=True):
+    def get_for_sale_price(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_for_sale_price(with_properties)
+        return pc.get_for_sale_price(with_properties, amount)
 
-    def get_for_sale_price_net(self, request, with_properties=True):
+    def get_for_sale_price_net(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_for_sale_price_net(with_properties)
+        return pc.get_for_sale_price_net(with_properties, amount)
 
-    def get_for_sale_price_gross(self, request, with_properties=True):
+    def get_for_sale_price_gross(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_for_sale_price_gross(with_properties)
+        return pc.get_for_sale_price_gross(with_properties, amount)
 
-    def get_base_price(self, request, with_properties=True):
+    def get_base_price(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_base_price(with_properties)
+        return pc.get_base_price(with_properties, amount)
 
-    def get_base_price_net(self, request, with_properties=True):
+    def get_base_price_net(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_base_price_net(with_properties)
+        return pc.get_base_price_net(with_properties, amount)
 
-    def get_base_price_gross(self, request, with_properties=True):
+    def get_base_price_gross(self, request, with_properties=True, amount=1):
         """
         See lfs.plugins.PriceCalculator
         """
         pc = self.get_price_calculator(request)
-        return pc.get_base_price_gross(with_properties)
+        return pc.get_base_price_gross(with_properties, amount)
 
     def get_product_tax_rate(self, request=None):
         """
@@ -2681,3 +2707,16 @@ class ProductAttachment(models.Model):
         if self.file.url:
             return self.file.url
         return None
+
+
+class ProductPrice(models.Model):
+    """Represents one price for a product when the product has more than one
+    price.
+    """
+    class Meta:
+        ordering = ("amount", )
+
+    product = models.ForeignKey(Product, related_name="prices")
+    amount = models.IntegerField(default=1)
+    price = models.FloatField(_(u"Price"), default=0.0)
+    for_sale_price = models.FloatField(_(u"For Sale Price"), default=0.0)
