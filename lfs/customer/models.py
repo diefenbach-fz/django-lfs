@@ -44,6 +44,8 @@ class Customer(models.Model):
 
     selected_country = models.ForeignKey(Country, verbose_name=_(u"Selected country"), blank=True, null=True)
 
+    allow_invoice = models.BooleanField(_("Invoice Allowed"))
+
     def __unicode__(self):
         return "%s/%s" % (self.user, self.session)
 
