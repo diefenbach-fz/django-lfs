@@ -166,11 +166,12 @@ def customers_inline(request, template_name="manage/customer/customers_inline.ht
             cart_price = None
 
         orders = Order.objects.filter(session=customer.session)
-        customers.append({
-            "customer": customer,
-            "orders": len(orders),
-            "cart_price": cart_price,
-        })
+        if (customer.user) or (len(orders) > 0):
+            customers.append({
+                "customer": customer,
+                "orders": len(orders),
+                "cart_price": cart_price,
+            })
 
     return render_to_string(template_name, RequestContext(request, {
         "customers": customers,
@@ -191,8 +192,15 @@ def selectable_customers_inline(request, customer_id, template_name="manage/cust
     customer_filters = request.session.get("customer-filters", {})
     customers = _get_filtered_customers(request, customer_filters)
 
-    page = get_current_page(request, customers, customer, AMOUNT)
-    paginator = Paginator(customers, AMOUNT)
+    # Display only customers with at least one order
+    temp = []
+    for c in customers:
+        orders = Order.objects.filter(session=c.session)
+        if (c.user) or (len(orders) > 0):
+            temp.append(c)
+
+    page = get_current_page(request, temp, customer, AMOUNT)
+    paginator = Paginator(temp, AMOUNT)
 
     try:
         page = paginator.page(page)
