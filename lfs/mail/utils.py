@@ -8,6 +8,9 @@ from django.template.base import TemplateDoesNotExist
 from django.template.loader import render_to_string
 from django.utils.translation import ugettext_lazy as _
 
+# flowzone imports
+from flowzone_mails.pdfs import Invoice
+
 
 def send_order_sent_mail(order):
     try:
@@ -116,6 +119,11 @@ def _send_order_received_mail(request, order):
     }))
 
     mail.attach_alternative(html, "text/html")
+
+    # Create PDF
+    pdf = Invoice(order).create_pdf()
+    mail.attach("Rechnung", pdf.read(), "application/pdf")
+
     mail.send(fail_silently=True)
 
 
