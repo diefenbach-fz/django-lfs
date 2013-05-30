@@ -191,6 +191,7 @@ class Shop(models.Model):
     meta_title = models.CharField(_(u"Meta title"), blank=True, default="<name>", max_length=80)
     meta_keywords = models.TextField(_(u"Meta keywords"), blank=True)
     meta_description = models.TextField(_(u"Meta description"), blank=True)
+    delivery_note_mail = models.EmailField(_(u"Delivery Note address"))
 
     class Meta:
         permissions = (("manage_shop", "Manage shop"),)
