@@ -222,6 +222,7 @@ class CartItem(models.Model):
     amount = models.FloatField(_(u"Quantity"), blank=True, null=True)
     creation_date = models.DateTimeField(_(u"Creation date"), auto_now_add=True)
     modification_date = models.DateTimeField(_(u"Modification date"), auto_now=True, auto_now_add=True)
+    external_id = models.CharField(_("External Id"), blank=True, max_length=10)  # FLOWZONE
 
     class Meta:
         ordering = ['id']

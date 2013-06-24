@@ -155,6 +155,7 @@ class OrderItem(models.Model):
     product_price_net = models.FloatField(_(u"Product price net"), default=0.0)
     product_price_gross = models.FloatField(_(u"Product price gross"), default=0.0)
     product_tax = models.FloatField(_(u"Product tax"), default=0.0)
+    external_id = models.CharField(_(u"External ID"), blank=True, default="", max_length=10)  # FLOWZONE
 
     def __unicode__(self):
         return "%s" % self.product_name

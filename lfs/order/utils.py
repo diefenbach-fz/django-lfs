@@ -172,6 +172,7 @@ def add_order(request):
             product_price_net=cart_item.product.get_price_net(request),
             product_price_gross=cart_item.get_product_price_gross(request),
             product_tax=cart_item.product.get_tax(request),
+            external_id=cart_item.external_id,  # FLOWZONE
         )
 
         cart_item.product.decrease_stock_amount(cart_item.amount)

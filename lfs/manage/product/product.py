@@ -65,6 +65,7 @@ class ProductSubTypeForm(forms.ModelForm):
         self.fields["sub_type"].choices = PRODUCT_TYPE_FORM_CHOICES
 
 
+# FLOWZONE (added external_id)
 class ProductDataForm(forms.ModelForm):
     """
     Form to add and edit master data of a product.
@@ -82,7 +83,7 @@ class ProductDataForm(forms.ModelForm):
         fields = ("active", "name", "slug", "manufacturer", "sku", "sku_manufacturer", "tax", "price_calculator",
             "short_description", "description", "for_sale", "static_block", "template",
             "active_price_calculation", "price_calculation", "price_unit", "unit", "type_of_quantity_field",
-            "active_base_price", "base_price_unit", "base_price_amount")
+            "active_base_price", "base_price_unit", "base_price_amount", "external_id")
 
     def clean(self):
         super(ProductDataForm, self).clean()
