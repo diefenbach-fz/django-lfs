@@ -687,8 +687,9 @@ class Product(models.Model):
 
     uid = models.CharField(max_length=50, editable=False, unique=True, default=get_unique_id_str)
 
-    external_id = models.CharField(_(u"External ID"), blank=True, default="", max_length=10)  # FLOWZONE
-
+    # FLOWZONE
+    personalize_id = models.CharField(_(u"Personlize ID"), blank=True, default="", max_length=10)
+    individualize_id = models.CharField(_(u"Individualize ID"), blank=True, default="", max_length=10)
 
     class Meta:
         ordering = ("name", )
