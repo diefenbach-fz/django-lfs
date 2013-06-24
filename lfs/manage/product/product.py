@@ -1,6 +1,7 @@
 # django imports
 from django import forms
 from django.contrib.auth.decorators import permission_required
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage
 from django.core.urlresolvers import reverse
 from django.db import IntegrityError
@@ -65,7 +66,7 @@ class ProductSubTypeForm(forms.ModelForm):
         self.fields["sub_type"].choices = PRODUCT_TYPE_FORM_CHOICES
 
 
-# FLOWZONE (added external_id)
+# FLOWZONE (added external_id, added clean methods)
 class ProductDataForm(forms.ModelForm):
     """
     Form to add and edit master data of a product.
@@ -99,6 +100,18 @@ class ProductDataForm(forms.ModelForm):
                 self.errors["base_price_amount"] = ErrorList([_(u"This field is required.")])
 
         return self.cleaned_data
+
+    def clean_personalize_id(self):
+        personalize_id = self.cleaned_data.get("personalize_id")
+        if personalize_id and (len(Product.objects.filter(personalize_id=personalize_id).exclude(pk=self.instance.id)) > 0):
+            raise ValidationError(_(u"Ein Produkt mit dieser ID exisitiert bereits."))
+        return personalize_id
+
+    def clean_individualize_id(self):
+        individualize_id = self.cleaned_data.get("individualize_id")
+        if individualize_id and (len(Product.objects.filter(individualize_id=individualize_id).exclude(pk=self.instance.id)) > 0):
+            raise ValidationError(_(u"Ein Produkt mit dieser ID exisitiert bereits."))
+        return individualize_id
 
 
 class VariantDataForm(forms.ModelForm):
