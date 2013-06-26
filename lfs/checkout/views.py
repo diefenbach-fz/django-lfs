@@ -13,6 +13,7 @@ from django.template.loader import render_to_string
 from django.template import RequestContext
 from django.utils import simplejson
 from django.utils.translation import ugettext_lazy as _
+from django.views.decorators.csrf import csrf_exempt
 
 # lfs imports
 import lfs.core.utils
@@ -316,6 +317,7 @@ def empty_page_checkout(request, template_name="lfs/checkout/empty_page_checkout
     }))
 
 
+@csrf_exempt
 def thank_you(request, template_name="lfs/checkout/thank_you_page.html"):
     """Displays a thank you page ot the customer
     """
