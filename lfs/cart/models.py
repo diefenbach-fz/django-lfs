@@ -85,8 +85,9 @@ class Cart(models.Model):
                         else:
                             CartItemPropertyValue.objects.create(cart_item=cart_item, property_id=property_id, value=value)
         else:
+            # FLOWZONE (exclude: take only 'standard' cart items into account)
             try:
-                cart_item = CartItem.objects.get(cart=self, product=product)
+                cart_item = CartItem.objects.exclude(external_id__regex=r".+").get(cart=self, product=product)
             except CartItem.DoesNotExist:
                 cart_item = CartItem.objects.create(cart=self, product=product, amount=amount)
             else:
